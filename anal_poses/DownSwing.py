@@ -2,7 +2,7 @@ import numpy as np
 from anal_poses.utils import p3_angle
 from anal_poses.utils import p2_diff
 from anal_poses.utils import add_korean_keyword
-from anal_poses.utils import key_to_str
+# from anal_poses.utils import key_to_str
 
 
 # 1번 자세
@@ -43,19 +43,19 @@ class DownSwing:
         angle = p3_angle(lhip, lfoot, line)
 
         if 6 <= angle <= 12.5:
-            self.feedback["bending_arms"] = {
+            self.feedback["bending_left_arm"] = {
                 0: 2,
                 1: angle,
                 2: "Good."
             }
         elif 5 <= angle <= 16:
-            self.feedback["bending_arms"] = {
+            self.feedback["bending_left_arm"] = {
                 0: 1,
                 1: angle,
                 2: "So So"
             }
         else:
-            self.feedback["bending_arms"] = {
+            self.feedback["bending_left_arm"] = {
                 0: 0,
                 1: angle,
                 2: "bad"
@@ -130,7 +130,7 @@ class DownSwing:
         add_korean_keyword(self.feedback, KOREAN_KEYWORD)
 
         # 모든 키를 스트링으로 바꾼 결과 리턴
-        return key_to_str(self.feedback)
+        return self.feedback
 
 
 KOREAN_KEYWORD = {

@@ -20,13 +20,13 @@ from bson.json_util import dumps
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 
 # openpose 패스 설정
-op_path = "C:/openpose/bin/python/openpose/Release"
-sys.path.append(op_path)
-os.environ['PATH'] = os.environ['PATH'] + ';' + 'C:/openpose/bin'
+# op_path = "C:/openpose/bin/python/openpose/Release"
+# sys.path.append(op_path)
+# os.environ['PATH'] = os.environ['PATH'] + ';' + 'C:/openpose/bin'
 
 # openpose 경로 집
-# sys.path.append("C:\\openpose\\build\\python\\openpose\\Release")
-# os.environ['PATH'] = os.environ['PATH'] + ';' + 'C:\\penpose\\build\\bin'
+sys.path.append("C:\\openpose\\build\\python\\openpose\\Release")
+os.environ['PATH'] = os.environ['PATH'] + ';' + 'C:\\openpose\\build\\bin'
 
 # openpose import
 try:
@@ -203,7 +203,7 @@ def upload_file():
     # )
     col.update_one(
         {"email": current_user},
-        {"$push": {"swingData": result}}
+        {"$push": {"swingData": json.dumps(result, ensure_ascii=False)}}
     )
     # print(json.dumps(result))
     print(f'{current_user} : {upload_date}, 스윙 분석 업데이트')
@@ -296,19 +296,22 @@ def login():
         'email': email,
         'password': password,
     })
+    print(doc)
     # for doc in docs:
     #     print(doc)
     if doc:
+        print(f'{email} 로그인 / 토큰 발급')
         access_token = create_access_token(identity=email)
         return jsonify(access_token)
     else:
-        print('none')
-        return 'bad'
+        print(f'{email} 로그인 실패')
+        return "none"
 
 
-@app.route('/past-swing')
+# 과거 데이터 전송
+@app.route('/get-past-swing')
 @jwt_required()
-def past_swing():
+def get_past_swing():
     current_user = get_jwt_identity()
     print(current_user)
 
@@ -328,17 +331,7 @@ def past_swing():
         return json.dumps([]), 200
 
 
-# 유저가 어떤 뱃지를 갖고 있는지 체크하는 라우트
-@app.route('/get-my-badges')
-@jwt_required()
-def get_my_badges():
-    current_user = get_jwt_identity()
-    user_badges = col.find_one({ "email": current_user })["badges"]
-    print(type(user_badges))
-    return user_badges
-
-
-# 이미지 요청 처리
+# 피드백 이미지 요청 처리
 @app.route('/get-image/<image_name>')
 @jwt_required()
 def get_image(image_name):
@@ -356,7 +349,17 @@ def get_image(image_name):
     #     return send_from_directory('data/images/badges', f"{badge}")
 
 
-# 유저 뱃지
+# 유저가 어떤 뱃지를 갖고 있는지 체크하는 라우트
+@app.route('/get-my-badges')
+@jwt_required()
+def get_my_badges():
+    current_user = get_jwt_identity()
+    user_badges = col.find_one({ "email": current_user })["badges"]
+    print(type(user_badges))
+    return { index: item for index, item in enumerate(user_badges) }
+
+
+# 유저 뱃지 이미지 전송
 @app.route('/get-badge-image/<badge_name>')
 @jwt_required()
 def get_badge_image(badge_name):
@@ -365,13 +368,36 @@ def get_badge_image(badge_name):
     return send_from_directory('data/images/badges', f"{badge_name}.png")
 
 
+# 비디오 소셜에 업로드
+@app.route('/put-video-social/<video_name>', methods=['POST'])
+@jwt_required()
+def post_video_social(video_name):
+    current_user = get_jwt_identity()
+    now = datetime.now()
+    upload_date = now.strftime('%Y-%m-%d-%H-%M')
+    print(upload_date)
+    db.social.insert_one({
+        "video_name": str(video_name),
+        "email": current_user,
+        "date": upload_date,
+        "comments": [],
+        "likes": [],
+    })
+    print('hi')
+    return 'success'
+
+
+@app.route('/get-social')
+def get_social():
+    doc = db.social.find().sort("_id", -1)
+    print(doc)
+    return doc
 
 
 # 비디오 요청 처리
-@app.route('/get-video')
-@jwt_required()
-def get_video():
-    pass
+@app.route('/get-video/<video_name>')
+def get_video(video_name):
+    return send_from_directory('data/videos', f"{video_name}.mp4")
 
 
 @app.route('/test/update')

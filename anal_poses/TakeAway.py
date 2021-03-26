@@ -2,7 +2,7 @@ import numpy as np
 from anal_poses.utils import p3_angle
 from anal_poses.utils import p2_diff
 from anal_poses.utils import add_korean_keyword
-from anal_poses.utils import key_to_str
+# from anal_poses.utils import key_to_str
 
 
 # 1번 자세
@@ -158,7 +158,7 @@ class TakeAway:
         add_korean_keyword(self.feedback, KOREAN_KEYWORD)
 
         # 모든 키를 스트링으로 바꾼 결과 리턴
-        return key_to_str(self.feedback)
+        return self.feedback
 
 
 KOREAN_KEYWORD = {

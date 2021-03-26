@@ -2,7 +2,7 @@ import numpy as np
 from anal_poses.utils import p3_angle
 from anal_poses.utils import p2_diff
 from anal_poses.utils import add_korean_keyword
-from anal_poses.utils import key_to_str
+# from anal_poses.utils import key_to_str
 
 
 # 2번 자세
@@ -216,7 +216,7 @@ class BackSwing:
 
         add_korean_keyword(self.feedback, KOREAN_KEYWORD)
 
-        return key_to_str(self.feedback)
+        return self.feedback
 
 
 KOREAN_KEYWORD = {
